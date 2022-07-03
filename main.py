@@ -1,7 +1,7 @@
 from pyvirtualdisplay import Display
 from selenium import webdriver
 import hashlib
-display = Display(visible=True, size=(1920, 1080))
+display = Display(visible=False, size=(1920, 1080))
 display.start()
 
 driver = webdriver.Chrome()
