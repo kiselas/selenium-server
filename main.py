@@ -5,7 +5,7 @@ display = Display(visible=False, size=(1920, 1080))
 display.start()
 
 driver = webdriver.Chrome()
-driver.get('http://www.google.com')
+driver.get('https://bot.sannysoft.com/')
 body = str.encode(driver.page_source)
 file_name = hashlib.md5(driver.current_url.encode()).hexdigest()
 
