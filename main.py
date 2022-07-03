@@ -1,16 +1,29 @@
 from pyvirtualdisplay import Display
 from selenium import webdriver
 import hashlib
-display = Display(visible=False, size=(1920, 1080))
-display.start()
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
-driver = webdriver.Chrome()
-driver.get('https://bot.sannysoft.com/')
-body = str.encode(driver.page_source)
-file_name = hashlib.md5(driver.current_url.encode()).hexdigest()
 
-with open(f'./{file_name}.html', 'w') as f:
-    f.write(driver.page_source)
+def get_query_params(url_path):
+    parsed_url = urlparse(url_path)
+    captured_values = parse_qs(parsed_url.query)
+    return captured_values
 
-driver.quit()
-display.stop()
+
+def get_page(url):
+    display = Display(visible=False, size=(1920, 1080))
+    display.start()
+    driver = webdriver.Chrome()
+    driver.get(url)
+    body = str.encode(driver.page_source)
+    file_name = hashlib.md5(driver.current_url.encode()).hexdigest()
+
+    with open(f'./{file_name}.html', 'w') as f:
+        f.write(driver.page_source)
+
+    driver.quit()
+    display.stop()
+    return body
+
+
