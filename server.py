@@ -1,52 +1,49 @@
-import socketserver
-from http.server import BaseHTTPRequestHandler
-import time
-import threading
-from main import get_page, get_query_params
+from fastapi import FastAPI
+from main import render_page
+from fastapi.responses import HTMLResponse
+import validators
+import uvicorn
 
-def some_function():
-    print('test')
-
-
-class MyTCPServer(socketserver.TCPServer):
-    def server_bind(self):
-        import socket
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(self.server_address)
+app = FastAPI()
 
 
-class MyHandler(BaseHTTPRequestHandler):
-
-    def do_GET(self):
-        response = ''
-        if '/get_page' in self.path:
-            url = get_query_params(self.path)['url'][0]
-            response = get_page(url)
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            print(self.wfile)
-            self.wfile.write(response)
-        if self.path.startswith('/kill_server'):
-            print("Server is going down, run it again manually!")
-
-            def kill_me_please(server):
-                server.shutdown()
-            threading.Thread(target=kill_me_please, args=(httpd,),).start()
-            self.send_error(500)
+@app.get("/")
+async def root():
+    return {"message": "Hello, i'm selenium renderer! 🐣"}
 
 
+@app.get("/get_page/", response_class=HTMLResponse)
+async def get_page(url=None, body=None, proxy=None):
+    """
+    A temporary alternative for checking pages through the browser
+    :param url:
+    :param body:
+    :param proxy:
+    :return: html response | error
+    """
+    if url and validators.url(url):
+        response = render_page(url, body, proxy)
+        return response
+    else:
+        return {'Error': 'Invalid url'}
 
 
+@app.post("/get_page/", response_class=HTMLResponse)
+async def get_page(url=None, body=None, proxy=None):
+    """
+    Main function to handle http request to rendering page
+    from url.
+    :param url: str
+    :param body: json
+    :param proxy: str 0.0.0.0
+    :return: response | error
+    """
+    if url and validators.url(url):
+        response = render_page(url, body, proxy)
+        return response
+    else:
+        return {'Error': 'Invalid url'}
 
-# httpd = socketserver.TCPServer(("", 8080), MyHandler)
-# httpd.shutdown()
-
-server_address = ('', 8000)
-httpd = MyTCPServer(server_address, MyHandler)
-try:
-    httpd.serve_forever()
-except KeyboardInterrupt:
-    print('^C received, shutting down server')
-    httpd.server_close()
-httpd.server_close()
+# for debug
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
