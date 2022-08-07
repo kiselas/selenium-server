@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from main import render_page
 from fastapi.responses import HTMLResponse
 import validators
-import uvicorn
 
 app = FastAPI()
 
@@ -22,8 +21,8 @@ async def get_page(url=None, body=None, proxy=None):
     :return: html response | error
     """
     if url and validators.url(url):
-        response = render_page(url, body, proxy)
-        return response
+        response = render_page.send(url, body, proxy)
+        return response.get_result(block=True)
     else:
         return {'Error': 'Invalid url'}
 
@@ -39,11 +38,7 @@ async def get_page(url=None, body=None, proxy=None):
     :return: response | error
     """
     if url and validators.url(url):
-        response = render_page(url, body, proxy)
+        response = render_page.send(url, body, proxy)
         return response
     else:
         return {'Error': 'Invalid url'}
-
-# for debug
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000)

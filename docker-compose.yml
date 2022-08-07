@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "80:8000"
+    volumes:
+      - ./:/code
+    command: >
+      sh -c "uvicorn server:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7.0.4-alpine
+    ports:
+      - "6370:6379"
+  worker:
+      build:
+        context: .
+      command: >
+        sh -c "dramatiq -p 4 -t 4 main"
+      depends_on:
+        - redis
